@@ -7,20 +7,20 @@ export class EmailSenderService {
   async sendEmail(data: MailDataDto) {
     try {
       const transporter = nodemailer.createTransport({
-        host: 'mail.smartapps.com.ng',
-        port: 465,
-        secure: true,
+        host: process.env.MAIL_HOST,
+        port: Number(process.env.MAIL_PORT),
+        secure: process.env.MAIL_SECURE === 'true',
         auth: {
-          user: 'testmail@smartapps.com.ng', 
-          pass: '$R!_mn7748tR', 
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS,
         },
       });
 
-      const emails = data.to; 
+      const emails = data.to;
       for (const recipient of emails) {
         await transporter.sendMail({
           to: recipient.trim(),
-          from: 'testmail@smartapps.com.ng',
+          from: process.env.MAIL_FROM,
           subject: data.subject,
           text: data.text,
           html: data.html,

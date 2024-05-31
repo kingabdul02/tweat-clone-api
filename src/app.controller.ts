@@ -6,6 +6,7 @@ import {
   Body,
   ConflictException,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { PostService } from './services/post.service';
@@ -14,6 +15,7 @@ import { User as UserModel, Post as PostModel } from '@prisma/client';
 import { BcryptService } from './utils/bcrypt.service';
 import { LoginRequestDto } from './models/user.model';
 import { AuthService } from './auth/auth.service';
+import { AuthGuard } from './auth/auth.guard';
 
 @Controller()
 export class AppController {
@@ -78,6 +80,7 @@ export class AppController {
     return this.userService.users({});
   }
 
+  @UseGuards(AuthGuard)
   @Post('share-tweet')
   async shareTweet(
     @Body('tweetId') tweetId: number,
