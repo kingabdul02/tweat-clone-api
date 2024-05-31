@@ -1,5 +1,5 @@
 export class MailDataDto {
-    to: string[];
+    recipients: string[];
     from: string;
     subject: string;
     text: string; 
@@ -7,3 +7,8 @@ export class MailDataDto {
     context?: any; 
   }
   
+
+
+export class MailRecipientDto {
+  email_address!: string;
+}

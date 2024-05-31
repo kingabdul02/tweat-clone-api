@@ -4,7 +4,9 @@ import { MailDataDto } from './mail.dto';
 
 @Injectable()
 export class EmailSenderService {
-  async sendEmail(data: MailDataDto) {
+  async sendEmail(data: any) {
+    console.log('Emails sent ssending.', data.data);
+    const payload = data.data;
     try {
       const transporter = nodemailer.createTransport({
         host: process.env.MAIL_HOST,
@@ -16,19 +18,23 @@ export class EmailSenderService {
         },
       });
 
-      const emails = data.to;
-      for (const recipient of emails) {
-        await transporter.sendMail({
-          to: recipient.trim(),
-          from: process.env.MAIL_FROM,
-          subject: data.subject,
-          text: data.text,
-          html: data.html,
-        });
-        console.log(`Email sent successfully to ${recipient}`);
-      }
+      payload.recipients.forEach(async (email) => {
+        const mailOptions = {
+          from: payload.from,
+          to: email,
+          subject: payload.subject,
+          text: payload.text,
+          html: payload.html,
+        };
+    
+        // Send the email
+        await transporter.sendMail(mailOptions);
+        console.log('Emails sent successfully.', payload);
+      });
     } catch (error) {
       console.error('Error sending email:', error);
+      throw error;
     }
   }
 }
+

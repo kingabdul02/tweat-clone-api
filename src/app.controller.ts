@@ -16,6 +16,7 @@ import { BcryptService } from './utils/bcrypt.service';
 import { LoginRequestDto } from './models/user.model';
 import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
+import { MailRecipientDto } from './mail/mail.dto';
 
 @Controller()
 export class AppController {
@@ -82,10 +83,11 @@ export class AppController {
 
   @UseGuards(AuthGuard)
   @Post('share-tweet')
-  async shareTweet(
-    @Body('tweetId') tweetId: number,
-    @Body('emails') emails: string[],
-  ): Promise<void> {
+  async shareTweet(@Body() body: { tweetId: number; recipients: { email_address: string }[] }) {
+    const tweetId = body.tweetId;
+    const emails = body.recipients.map(recipient => recipient.email_address);
+
+    console.log('emails', emails)
     await this.postService.shareTweet(tweetId, emails);
   }
 }
