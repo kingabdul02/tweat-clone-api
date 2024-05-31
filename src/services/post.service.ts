@@ -2,10 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { Post, Prisma } from '@prisma/client';
 import * as nodemailer from 'nodemailer';
+import { MailService } from 'src/mail/mail.service';
+import { MailDataDto } from 'src/mail/mail.dto';
 
 @Injectable()
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly mailService: MailService
+    ) {}
 
   async post(
     postWhereUniqueInput: Prisma.PostWhereUniqueInput,
@@ -38,30 +43,18 @@ export class PostService {
     });
   }
 
+
   async shareTweet(tweatId: number, emails: string[]): Promise<void> {
-    // Create a Nodemailer transporter
-    const transporter = nodemailer.createTransport({
-      host: 'mail.smartapps.com.ng', // Use your email service provider
-      port: 465,
-      secure: true,
-      auth: {
-        user: 'testmail@smartapps.com.ng', // Your email
-        pass: '$R!_mn7748tR', // Your email password or app password
-      },
-    });
-
-    // Compose the email
-    const mailOptions = {
+    const mailData: MailDataDto = {
+      to: emails,
       from: 'testmail@smartapps.com.ng',
-      to: emails.join(', '), // Join the emails array into a comma-separated string
       subject: 'Check out this Tweet!',
-      text: `Here is an interesting tweet for you: ${tweatId}`, // Customize the email content
-      html: `<p>Here is an interesting tweet for you: <a href="http://localhost:3000/tweet/${tweatId}">View Tweet</a></p>`, // Optionally use HTML
+      text: `Here is an interesting tweet for you: ${tweatId}`,
+      html: `<p>Here is an interesting tweet for you: <a href="http://localhost:3000/tweet/${tweatId}">View Tweet</a></p>`,
     };
-    
-    // Send the email
-    await transporter.sendMail(mailOptions);
-    console.log('email sennt');
 
+    await this.mailService.sendEmail(mailData);
+
+    console.log('Tweet shared successfully!'); 
   }
 }
