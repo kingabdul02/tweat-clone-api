@@ -12,6 +12,8 @@ import { PostService } from './services/post.service';
 import { PrismaService } from './services/prisma.service';
 import { User as UserModel, Post as PostModel } from '@prisma/client';
 import { BcryptService } from './utils/bcrypt.service';
+import { LoginRequestDto } from './models/user.model';
+import { AuthService } from './auth/auth.service';
 
 @Controller()
 export class AppController {
@@ -20,13 +22,14 @@ export class AppController {
     private readonly postService: PostService,
     private readonly prisma: PrismaService,
     private readonly bcrypt: BcryptService,
+    private readonly authService: AuthService,
   ) {}
 
   @Get('tweats')
   async getAllTweats(): Promise<PostModel[]> {
     return this.postService.posts({});
   }
-  
+
   @Get('tweat/:id')
   async getPostById(@Param('id') id: string): Promise<PostModel> {
     return this.postService.post({ id: Number(id) });
@@ -67,11 +70,19 @@ export class AppController {
     const hashed_password = await this.bcrypt.hashPassword(payload.password);
     payload.password = hashed_password;
 
-    return this.userService.createUser(payload);
+    return this.authService.createUser(payload);
   }
 
   @Get('users')
   async getAllUsers(): Promise<UserModel[]> {
     return this.userService.users({});
+  }
+
+  @Post('share-tweet')
+  async shareTweet(
+    @Body('tweetId') tweetId: number,
+    @Body('emails') emails: string[],
+  ): Promise<void> {
+    await this.postService.shareTweet(tweetId, emails);
   }
 }

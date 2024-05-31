@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from './prisma.service';
 import { User, Prisma } from '@prisma/client';
+import { BcryptService } from '../utils/bcrypt.service';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly bcrypt: BcryptService,
+    ) {}
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
@@ -17,12 +21,6 @@ export class UserService {
   async users({}): Promise<User[]> {
     // const { skip, take, cursor, where, orderBy } = params;
     return this.prisma.user.findMany({
-    });
-  }
-
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({
-      data,
     });
   }
 
