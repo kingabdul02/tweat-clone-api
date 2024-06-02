@@ -26,14 +26,6 @@ $ npx prisma migrate dev --name init
 ```
 
 ```bash
-#  Start Redis Server
-$ docker run -d -p 6379:6379 redis
-
-# Or, if you have Redis installed locally, you can start it with:
-$ redis-server
-```
-
-```bash
 # start project (development)
 $ npm run start
 
