@@ -34,6 +34,7 @@ export class AuthGuard implements CanActivate {
                     const user: AuthLoggedInUserDto = {
                         id: tokenEntry.user.id,
                         name: tokenEntry.user.name,
+                        email: tokenEntry.user.email
                     };
 
                     request['user'] = user;

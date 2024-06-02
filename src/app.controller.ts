@@ -7,73 +7,59 @@ import {
   ConflictException,
   BadRequestException,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './services/user.service';
 import { PostService } from './services/post.service';
 import { PrismaService } from './services/prisma.service';
-import { User as UserModel, Post as PostModel } from '@prisma/client';
+import { User as UserModel, Post as PostModel, SharedWithMePost } from '@prisma/client';
 import { BcryptService } from './utils/bcrypt.service';
 import { LoginRequestDto } from './models/user.model';
 import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
 import { MailRecipientDto } from './mail/mail.dto';
 
-@Controller()
+@Controller('api')
 export class AppController {
   constructor(
     private readonly userService: UserService,
     private readonly postService: PostService,
-    private readonly prisma: PrismaService,
-    private readonly bcrypt: BcryptService,
-    private readonly authService: AuthService,
   ) {}
 
-  @Get('tweats')
+  @Get('tweets')
   async getAllTweats(): Promise<PostModel[]> {
     return this.postService.posts({});
   }
 
-  @Get('tweat/:id')
-  async getPostById(@Param('id') id: string): Promise<PostModel> {
+  @Get('tweets/:id')
+  async getPostById(@Param('id') id: number): Promise<PostModel> {
     return this.postService.post({ id: Number(id) });
   }
 
-  @Post('tweat')
+  @UseGuards(AuthGuard)
+  @Get('my-tweets')
+  async getMyPost(@Request() request: Request): Promise<PostModel[]> {
+    const user = request['user'];
+    return this.postService.myPost(user.email);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('tweets')
   async createTweat(
-    @Body() postData: { title: string; content?: string; authorEmail: string },
+    @Body() postData: { title: string; content?: string },
+    @Request() request: Request,
   ): Promise<PostModel> {
-    const { title, content, authorEmail } = postData;
-    return this.postService.createPost({
+    const { title, content } = postData;
+    const user = request['user'];
+    const post = await this.postService.createPost({
       title,
       content,
       author: {
-        connect: { email: authorEmail },
+        connect: { email: user.email },
       },
     });
-  }
 
-  @Post('register')
-  async signupUser(
-    @Body() payload: { name?: string; email: string, password: string },
-  ): Promise<UserModel> {
-    console.log('payload', payload);
-    
-    if (!payload.password) {
-      throw new BadRequestException('Password is required');
-    }
-
-    const existingRecord = await this.prisma.user.count({
-      where: { email: payload.email },
-    });
-
-    if (existingRecord > 0) {
-      throw new ConflictException(`A user with the specified email: ${payload.email} already exists!`);
-    }
-
-    const hashed_password = await this.bcrypt.hashPassword(payload.password);
-    payload.password = hashed_password;
-
-    return this.authService.createUser(payload);
+    return this.getPostById(post.id);
   }
 
   @Get('users')
@@ -89,5 +75,14 @@ export class AppController {
 
     console.log('emails', emails)
     await this.postService.shareTweet(tweetId, emails);
+
+    return { message: 'Tweet shared successfully!' };
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('shared-with-me-tweets')
+  async getMySharedTweets(@Request() request: Request): Promise<SharedWithMePost[]> {
+    const user = request['user'];
+    return this.postService.getSharedWithMeTweets(user.id);
   }
 }

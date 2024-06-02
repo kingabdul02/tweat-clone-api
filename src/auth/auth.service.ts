@@ -61,4 +61,19 @@ export class AuthService {
       data,
     });
   }
+
+  async logout(accessToken: string): Promise<void> {
+    const tokenEntry = await this.prisma.userLoginEntry.findFirst({
+      where: { access_token: accessToken },
+    });
+
+    if (!tokenEntry) {
+      throw new UnauthorizedException('Invalid or expired token.');
+    }
+
+    // Delete the token entry or mark it as invalid
+    await this.prisma.userLoginEntry.delete({
+      where: { id: tokenEntry.id },
+    });
+  }
 }
