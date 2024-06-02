@@ -67,17 +67,17 @@ export class PostService {
   async shareTweet(tweetId: number, recipients: string[]): Promise<void> {
 
     console.log('recipients', recipients)
-    const mailData: MailDataDto = {
-      recipients: recipients,
-      from: 'testmail@smartapps.com.ng',
-      subject: 'Check out this Tweet!',
-      text: `Here is an interesting tweet for you: ${tweetId}`,
-      html: `<p>Here is an interesting tweet for you: <a href="http://localhost:5173/tweet/${tweetId}">View Tweet</a></p>`,
-    };
+    // const mailData: MailDataDto = {
+    //   recipients: recipients,
+    //   from: 'testmail@smartapps.com.ng',
+    //   subject: 'Check out this Tweet!',
+    //   text: `Here is an interesting tweet for you: ${tweetId}`,
+    //   html: `<p>Here is an interesting tweet for you: <a href="http://localhost:5173/tweet/${tweetId}">View Tweet</a></p>`,
+    // };
 
-    await this.mailService.sendEmail(mailData);
+    // await this.mailService.sendEmail(mailData);
 
-    console.log('Tweet shared successfully!', mailData);
+    console.log('Tweet shared successfully!');
 
     for (const email of recipients) {
       const user = await this.prisma.user.findUnique({ where: { email } });
